@@ -17,7 +17,7 @@ exports.up = function(knex) {
     })
     .createTable('admin', admin=>{
         admin.increments();
-        admin.string('username').notNullable();
+        admin.string('username').notNullable().unique();
         admin.string('password').notNullable();
     })
     .createTable('users', user =>{
