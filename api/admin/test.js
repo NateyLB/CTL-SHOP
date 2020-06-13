@@ -1,6 +1,5 @@
 var AWS = require('aws-sdk');
-const config = require('./config-vars')
-
+const config = require('./aws-keys.js');
 
 
 const s3 = new AWS.S3({

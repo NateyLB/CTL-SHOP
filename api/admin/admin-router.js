@@ -1,15 +1,18 @@
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const config = require('./config-vars')
+const config = require('./config-vars');
+const AWSKey = require('./aws-keys.js');
 const router = require("express").Router();
 var AWS = require('aws-sdk');
-const multerS3 = require('multer-s3');
-const multer = require('multer');
 const path = require('path')
 
 const Admin = require("./admin-model.js");
 const Product = require("./product-model.js");
 const { isValid } = require("./admin-service.js");
+
+const aws_access_key_id = process.env.AWS_ACCESS_KEY_ID ||  AWSKey.aws_access_key_id;
+const aws_secret_access_key = process.env.AWS_SECRET_ACCESS_KEY || AWSKey.aws_secret_access_key;
+
 
 function createToken(admin) {
   const payload = {
@@ -60,8 +63,8 @@ router.post("/login",isValid, (req, res) => {
 })
 
 const s3 = new aws.S3({
-  accessKeyId: config.aws_access_key_id,
-  secretAccessKey: config.aws_secret_access_key
+  accessKeyId: aws_access_key_id,
+  secretAccessKey: aws_secret_access_key
  });
 
 
