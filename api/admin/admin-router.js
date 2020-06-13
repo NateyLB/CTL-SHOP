@@ -1,7 +1,6 @@
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const config = require('./config-vars');
-const AWSKey = require('./aws-keys.js');
 const router = require("express").Router();
 var AWS = require('aws-sdk');
 const path = require('path')
