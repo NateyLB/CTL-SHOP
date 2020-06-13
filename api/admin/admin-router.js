@@ -78,13 +78,13 @@ router.post("/products", isValid, (req, res)=> {productImgUpload( req, res, ( er
     } if (data) {
       console.log("Upload Success", data.Location);
       req.body.imgFile = data.Location
-      Product.add(req.body)
-      .then(product=>{
-        res.status(401).json(product)
-      })
-      .catch(err=>{
-        res.status(500).json({ message: err.message });
-      })
+      // Product.add(req.body)
+      // .then(product=>{
+      //   res.status(401).json(product)
+      // })
+      // .catch(err=>{
+      //   res.status(500).json({ message: err.message });
+      // })
 
     }
   });
