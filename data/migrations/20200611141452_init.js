@@ -15,7 +15,7 @@ exports.up = function(knex) {
         productSize.integer('product_id').unsigned().references('products.id')
         .notNullable().onUpdate('CASCADE').onDelete('CASCADE');
         productSize.string('size');
-        productSize.
+        productSize.integer('quantity').notNullable();
     })
     .createTable('item_type', item =>{
         item.increments();
