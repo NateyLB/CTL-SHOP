@@ -14,7 +14,8 @@ exports.up = function(knex) {
         productSize.increments();
         productSize.integer('product_id').unsigned().references('products.id')
         .notNullable().onUpdate('CASCADE').onDelete('CASCADE');
-        productSize.string('size')
+        productSize.string('size');
+        productSize.
     })
     .createTable('item_type', item =>{
         item.increments();
@@ -65,5 +66,6 @@ exports.down = function(knex) {
   .dropTableIfExists('users')
   .dropTableIfExists('admin')
   .dropTableIfExists('item_type')
+  .dropTableIfExists('product_sizes')
   .dropTableIfExists('products')
 };
