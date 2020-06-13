@@ -62,7 +62,7 @@ router.post("/login",isValid, (req, res) => {
       })
 })
 
-const s3 = new aws.S3({
+const s3 = new AWS.S3({
   accessKeyId: aws_access_key_id,
   secretAccessKey: aws_secret_access_key
  });
