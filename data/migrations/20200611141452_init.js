@@ -6,10 +6,15 @@ exports.up = function(knex) {
         product.integer('item_type').notNullable();
         product.string('description').notNullable();
         product.string('color').notNullable();
-        product.string('size').notNullable();
         product.decimal('price').notNullable();
         product.integer('quantity').notNullable();
         product.string('img_url').notNullable();
+    })
+    .createTable('product_sizes', productSize=>{
+        productSize.increments();
+        productSize.integer('product_id').unsigned().references('products.id')
+        .notNullable().onUpdate('CASCADE').onDelete('CASCADE');
+        productSize.string('size')
     })
     .createTable('item_type', item =>{
         item.increments();
@@ -33,7 +38,7 @@ exports.up = function(knex) {
     .createTable('orders', order =>{
         order.increments();
         order.integer('user_id').unsigned().references('users.id')
-        .onUpdate('CASCADE').onDelete('CASCADE');
+        .notNullable().onUpdate('CASCADE').onDelete('CASCADE');
         order.string('email');
         order.string('name');
         order.string('street_address');
@@ -46,7 +51,7 @@ exports.up = function(knex) {
     .createTable('order_products', op =>{
         op.increments();
         op.integer('product_id').unsigned().references('products.id')
-        .onUpdate('CASCADE').onDelete('CASCADE').notNullable();
+        .notNullable().onUpdate('CASCADE').onDelete('CASCADE')
         op.integer('order_id').unsigned().references('orders.id')
         .onUpdate('CASCADE').onDelete('CASCADE').notNullable();
     })
