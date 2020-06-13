@@ -2,8 +2,13 @@ const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const config = require('./config-vars')
 const router = require("express").Router();
+var AWS = require('aws-sdk');
+const multerS3 = require('multer-s3');
+const multer = require('multer');
+const path = require('path')
 
 const Admin = require("./admin-model.js");
+const Product = require("./product-model.js");
 const { isValid } = require("./admin-service.js");
 
 function createToken(admin) {
@@ -20,7 +25,7 @@ function createToken(admin) {
 
   return jwt.sign(payload, secret, options);
 }
-
+// .POST /api/admin/register
 router.post("/register", isValid, (req, res) => {
   const credentials = req.body;
     const rounds = process.env.BCRYPT_ROUNDS || 8;
@@ -37,6 +42,7 @@ router.post("/register", isValid, (req, res) => {
  
 })
 
+// .POST /api/admin/login
 router.post("/login",isValid, (req, res) => {
   const { username, password } = req.body;
     Admin.findBy({ "admin.username": username })
@@ -51,6 +57,35 @@ router.post("/login",isValid, (req, res) => {
       .catch(err => {
         res.status(500).json({ message: err.message });
       })
+})
+
+const s3 = new aws.S3({
+  accessKeyId: config.aws_access_key_id,
+  secretAccessKey: config.aws_secret_access_key
+ });
+
+
+// .POST /api/admin/products
+router.post("/products", isValid, (req, res)=> {productImgUpload( req, res, ( error ) => {
+  imgFile = req.body.imgFile;
+  res.status(401).json({ post: "up"})
+  s3.upload (uploadParams, function (err, data) {
+    if (err) {
+      console.log("Error", err);
+    } if (data) {
+      console.log("Upload Success", data.Location);
+      req.body.imgFile = data.Location
+      Product.add(req.body)
+      .then(product=>{
+        res.status(401).json(product)
+      })
+      .catch(err=>{
+        res.status(500).json({ message: err.message });
+      })
+
+    }
+  });
+  });
 })
 
 
