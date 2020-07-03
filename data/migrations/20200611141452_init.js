@@ -13,7 +13,12 @@ exports.up = function(knex) {
         product.string('color').notNullable();
         product.decimal('price').notNullable();
         product.integer('quantity').notNullable();
-        product.string('img_url').notNullable();
+    })
+    .createTable('product_images', images=>{
+        images.increments();
+        images.integer('product_id').unsigned().references('products.id')
+        .notNullable().onUpdate('CASCADE').onDelete('CASCADE');
+        images.string('img_url').notNullable();
     })
     .createTable('product_sizes', productSize=>{
         productSize.increments();
@@ -68,5 +73,6 @@ exports.down = function(knex) {
   .dropTableIfExists('admin')
   .dropTableIfExists('item_type')
   .dropTableIfExists('product_sizes')
+  .dropTableIfExists('product_images')
   .dropTableIfExists('products')
 };

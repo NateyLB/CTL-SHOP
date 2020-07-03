@@ -6,7 +6,10 @@ module.exports={
     findProductById,
     addProduct,
     addSize,
-    findSizesByProductId
+    findSizesByProductId,
+    findImageById,
+    findImagesByProductId,
+    addImage
 }
 
 function findProduct(){
@@ -40,13 +43,30 @@ function findSizeById(id){
 }
 
 function findSizesByProductId(product_id){
-  return db("product_sizes").where('product_id', product_id)
+  return db("product_sizes").where({product_id})
 }
 
 async function addSize(size){
   try {
     const [id] = await db("product_sizes").insert(size, "id")
     return findSizeById(id)
+  } catch(error){
+    throw error
+  }
+}
+function findImageById(id){
+  return db("product_images").where({ id }).first();
+
+}
+
+function findImagesByProductId(product_id){
+  return db("product_images").where({product_id})
+}
+
+async function addImage(image){
+  try {
+    const [id] = await db("product_images").insert(image, "id")
+    return findImageById(id)
   } catch(error){
     throw error
   }
