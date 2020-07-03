@@ -40,7 +40,7 @@ function findSizeById(id){
 }
 
 function findSizesByProductId(product_id){
-  return db("product_sizes").where({ product_id})
+  return db("product_sizes").where('product_id', product_id)
 }
 
 async function addSize(size){

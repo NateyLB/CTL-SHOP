@@ -87,9 +87,8 @@ router.post("/products",upload.single("file"), isLoggedIn,  (req, res) => {
         img_url: req.body.file
       })
       .then(product =>{
-        console.log("in add product")
         req.body.sizes.forEach( size =>{
-          Product.addSize(size)
+          Product.addSize({product_id: product.id, ...JSON.parse(size)})
           .then(size =>{
             console.log(size)
           })
@@ -98,7 +97,8 @@ router.post("/products",upload.single("file"), isLoggedIn,  (req, res) => {
           })
         })
         Product.findSizesByProductId(product.id)
-        .then( sizes =>{
+        .then( sizesArr =>{
+          console.log(sizesArr, "sizes")
           res.status(201).json({
             name: product.name,
             item_type: product.item_type,
@@ -107,9 +107,7 @@ router.post("/products",upload.single("file"), isLoggedIn,  (req, res) => {
             price: product.price,
             quantity: product.quantity,
             img_url: product.img_url,
-            sizes: sizes,
-
-    
+            sizes: sizesArr,
           })
         })
       })

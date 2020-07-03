@@ -4,8 +4,8 @@
   "description": "The chop backend for the CausingTheLost website",
   "main": "index.js",
   "scripts": {
-    "server": "nodemon index.js",
-    "start": "nodemon index.js",
+    "server": "node index.js",
+    "start": "node index.js",
     "test": "cross-env DB_ENV=testing jest --watch"
   },
   "repository": {
