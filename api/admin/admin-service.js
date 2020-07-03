@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken');
-const config = require('./config-vars');
 
 
 module.exports = {
@@ -22,7 +21,7 @@ function isLoggedIn(req, res, next){
   if(token){
   
 
-    jwt.verify(token, config.jwtSecret, (error,decodedToken) =>{
+    jwt.verify(token, process.env.JWT_SECRET, (error,decodedToken) =>{
       if(error){
         res.status(404).json({message:'YOU SHALL NOT PASS HACKER!'})
       }else{

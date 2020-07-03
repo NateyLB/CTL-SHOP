@@ -1,25 +1,16 @@
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const config = require('./config-vars');
 const router = require("express").Router();
 const AWS = require('aws-sdk');
-const path = require('path')
 const { v4: uuidv4 } = require('uuid');
+var multer = require('multer');
+require('dotenv').config({ path: require('find-config')('.env') });
 
-
-
-try {
-  var AWSKey = require('./aws-keys.js');
-} catch (ex) {
-  console.log(`Error: ${ex}`)
-}
 
 const Admin = require("./admin-model.js");
 const Product = require("./product-model.js");
 const { isValid, isLoggedIn } = require("./admin-service.js");
 
-const aws_access_key_id = process.env.AWS_ACCESS_KEY_ID || AWSKey.aws_access_key_id;
-const aws_secret_access_key = process.env.AWS_SECRET_ACCESS_KEY || AWSKey.aws_secret_access_key;
 
 
 function createToken(admin) {
@@ -28,10 +19,10 @@ function createToken(admin) {
     username: admin.username,
   };
 
-  const secret = config.jwtSecret;
+  const secret = process.env.JWT_SECRET
 
   const options = {
-    expiresIn: "1d",
+    expiresIn: "1w",
   };
 
   return jwt.sign(payload, secret, options);
@@ -71,30 +62,63 @@ router.post("/login", isValid, (req, res) => {
 })
 
 const s3 = new AWS.S3({
-  accessKeyId: aws_access_key_id,
-  secretAccessKey: aws_secret_access_key
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID ,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
 });
 
 
-
+const upload = multer();
 // .POST /api/admin/products
-router.post("/products",isLoggedIn,  (req, res) => {
-  var uploadParams = { Bucket: 'ctl-media1', Key: '', Body: '' };
- console.log(req.body)
-  uploadParams.Body = req.body.imgFile;
-  name_string = req.body.imgFile.substring(12)
-  name_string = uuidv4() + '-' + name_string
-  uploadParams.Key = name_string;
+router.post("/products",upload.single("file"), isLoggedIn,  (req, res) => {
+  var uploadParams = { Bucket: process.env.AWS_BUCKET_NAME, Key: uuidv4() + '-' + req.file.originalname, Body: req.file.buffer, ContentEncoding: 'base64', ContentType: req.file.mimetype, ACL: 'public-read' };
   s3.upload(uploadParams, function (err, data) {
     if (err) {
       console.log("Error", err);
     } if (data) {
       console.log("Upload Success", data.Location);
-      req.body.imgFile = data.Location;
-      res.status(201).json( data.Location );
+      req.body.file = data.Location;
+      Product.addProduct({
+        name: req.body.name ,
+        item_type: req.body.type,
+        description: req.body.description,
+        color: req.body.color,
+        price: req.body.price,
+        quantity: req.body.quantity,
+        img_url: req.body.file
+      })
+      .then(product =>{
+        console.log("in add product")
+        req.body.sizes.forEach( size =>{
+          Product.addSize(size)
+          .then(size =>{
+            console.log(size)
+          })
+          .catch(err=>{
+            res.status(500).json({ message: err.message });
+          })
+        })
+        Product.findSizesByProductId(product.id)
+        .then( sizes =>{
+          res.status(201).json({
+            name: product.name,
+            item_type: product.item_type,
+            description: product.description,
+            color: product.color,
+            price: product.price,
+            quantity: product.quantity,
+            img_url: product.img_url,
+            sizes: sizes,
 
+    
+          })
+        })
+      })
+      .catch(err =>{
+        res.status(500).json({ message: err.message });
+      })      
     }
   });
+
 })
 
 

@@ -1,2 +1,5 @@
 # CTL-SHOP
-The chop backend for the CausingTheLost website
+The shop backend for the CausingTheLost website
+
+# API's in use
+Amazon S3

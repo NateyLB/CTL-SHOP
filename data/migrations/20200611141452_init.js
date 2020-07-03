@@ -1,9 +1,14 @@
 
 exports.up = function(knex) {
-    return knex.schema.createTable('products', product =>{
+    return knex.schema.createTable('item_type', item =>{
+        item.increments();
+        item.string('type').notNullable();
+    })
+    .createTable('products', product =>{
         product.increments();
         product.string('name').notNullable();
-        product.integer('item_type').notNullable();
+        product.integer('item_type').unsigned().references('item_type.id')
+        .notNullable().onUpdate('CASCADE').onDelete('CASCADE');
         product.string('description').notNullable();
         product.string('color').notNullable();
         product.decimal('price').notNullable();
@@ -16,10 +21,6 @@ exports.up = function(knex) {
         .notNullable().onUpdate('CASCADE').onDelete('CASCADE');
         productSize.string('size');
         productSize.integer('quantity').notNullable();
-    })
-    .createTable('item_type', item =>{
-        item.increments();
-        item.string('name').notNullable();
     })
     .createTable('admin', admin=>{
         admin.increments();

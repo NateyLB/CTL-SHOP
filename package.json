@@ -1,11 +1,11 @@
 {
-  "name": "CTL-SHOP",
+  "name": "ctl-shop",
   "version": "1.0.0",
   "description": "The chop backend for the CausingTheLost website",
   "main": "index.js",
   "scripts": {
     "server": "nodemon index.js",
-    "start": "node index.js",
+    "start": "nodemon index.js",
     "test": "cross-env DB_ENV=testing jest --watch"
   },
   "repository": {
@@ -22,12 +22,17 @@
   "dependencies": {
     "aws-sdk": "^2.695.0",
     "bcryptjs": "^2.4.3",
+    "body-parser": "^1.19.0",
+    "ckey": "^1.0.2",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "helmet": "^3.22.1",
     "jsonwebtoken": "^8.5.1",
     "knex": "^0.21.1",
+    "knex-cleaner": "^1.3.0",
+    "mime-types": "^2.1.27",
+    "multer": "^1.4.2",
     "path": "^0.12.7",
     "pg": "^8.2.1",
     "sqlite3": "^4.2.0",
