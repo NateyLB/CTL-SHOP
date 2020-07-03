@@ -10,6 +10,8 @@ require('dotenv').config({ path: require('find-config')('.env') });
 const Admin = require("./admin-model.js");
 const Product = require("./product-model.js");
 const { isValid, isLoggedIn } = require("./admin-service.js");
+const { resolve } = require("path");
+const { rejects } = require("assert");
 
 
 
@@ -86,30 +88,27 @@ router.post("/products",upload.single("file"), isLoggedIn,  (req, res) => {
         quantity: req.body.quantity,
         img_url: req.body.file
       })
-      .then(product =>{
-        req.body.sizes.forEach( size =>{
-          Product.addSize({product_id: product.id, ...JSON.parse(size)})
-          .then(size =>{
-            console.log(size)
+      .then(async product =>{
+        const promises = await Promise.all([
+          req.body.sizes.map( size =>Product.addSize({product_id: product.id, ...JSON.parse(size)}))
+        ])
+       
+          // .then(responses=>{
+          //   console.log(responses)
+          // })
+          Product.findSizesByProductId(product.id)
+          .then(sizes=>{
+            res.status(201).json({
+              name: product.name,
+              item_type: product.item_type,
+              description: product.description,
+              color: product.color,
+              price: product.price,
+              quantity: product.quantity,
+              img_url: product.img_url,
+              sizes: sizes,
+            })
           })
-          .catch(err=>{
-            res.status(500).json({ message: err.message });
-          })
-        })
-        Product.findSizesByProductId(product.id)
-        .then( sizesArr =>{
-          console.log(sizesArr, "sizes")
-          res.status(201).json({
-            name: product.name,
-            item_type: product.item_type,
-            description: product.description,
-            color: product.color,
-            price: product.price,
-            quantity: product.quantity,
-            img_url: product.img_url,
-            sizes: sizesArr,
-          })
-        })
       })
       .catch(err =>{
         res.status(500).json({ message: err.message });
