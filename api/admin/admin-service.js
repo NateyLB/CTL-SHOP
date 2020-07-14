@@ -11,7 +11,7 @@ function isValid(req, res, next) {
     next()
   }
   else{
-    res.status(400).json({message:'Please provide email and password, password shoud be alphanumeric'})
+    res.status(400).json({message:'Please provide username and password, password shoud be alphanumeric'})
   }
 }
 

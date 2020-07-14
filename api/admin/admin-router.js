@@ -98,21 +98,10 @@ router.post("/products", upload.array("file"), isLoggedIn, (req, res) => {
         return await Promise.all(imgPromises)
         
       }
-      // const img_urls = await uploadImgs()
-      // console.log(img_urls)
       if (typeof req.body.sizes ==  'string') {
-        // const sizeRes = await Product.addSize({product_id: product.id, ...JSON.parse(req.body.sizes)})
-        // const imgRes = await uploadImgs()
-        // const size = {size: sizeRes.size, quantity: sizeRes.quantity}
-        // const img_urls = await imgRes.map(img =>{return {img_url: img.img_url}})
-        // console.log(size)
-        // console.log(img_urls, "URLS")
         const responses = await Promise.all([Product.addSize({product_id: product.id, ...JSON.parse(req.body.sizes)}),uploadImgs()])
         const size = {size: responses[0].size, quantity: responses[0].quantity}
         const img_urls = responses[1].map(img =>{return {img_url: img.img_url}})
-        // console.log(responses)
-        console.log(size)
-        console.log(img_urls)
         (res.status(201).json({
           name: product.name,
           item_type: product.item_type,
@@ -120,10 +109,9 @@ router.post("/products", upload.array("file"), isLoggedIn, (req, res) => {
           color: product.color,
           price: product.price,
           quantity: product.quantity,
-          sizes: size,
+          sizes: [size],
           img_urls: img_urls
         }))
-        // res.status(201)({api: "OK"})
         
       }
       else{
@@ -132,8 +120,6 @@ router.post("/products", upload.array("file"), isLoggedIn, (req, res) => {
         const imgRes = await uploadImgs()   
         const sizes = sizeRes.map(size => {return {size: size.size, quantity: size.quantity}})
         const img_urls = imgRes.map(img =>{return {img_url: img.img_url}})
-        console.log(sizes)
-        console.log(img_urls)
         res.status(201).json({
           name: product.name,
           item_type: product.item_type,
