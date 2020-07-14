@@ -70,7 +70,7 @@ const s3 = new AWS.S3({
 const upload = multer();
 // .POST /api/admin/products
 router.post("/products", upload.array("file"), isLoggedIn, (req, res) => {
-  Product.addProduct({
+  Product.addProductHeader({
     name: req.body.name,
     item_type: req.body.type,
     description: req.body.description,
@@ -99,10 +99,17 @@ router.post("/products", upload.array("file"), isLoggedIn, (req, res) => {
         
       }
       if (typeof req.body.sizes ==  'string') {
-        const responses = await Promise.all([Product.addSize({product_id: product.id, ...JSON.parse(req.body.sizes)}),uploadImgs()])
-        const size = {size: responses[0].size, quantity: responses[0].quantity}
-        const img_urls = responses[1].map(img =>{return {img_url: img.img_url}})
+        // const responses = await Promise.all([Product.addSize({product_id: product.id, ...JSON.parse(req.body.sizes)}),uploadImgs()])
+        // const size = {size: responses[0].size, quantity: responses[0].quantity}
+        // const img_urls = responses[1].map(img =>{return {img_url: img.img_url}})
+        const sizeRes = await Product.addSize({product_id: product.id, ...JSON.parse(req.body.sizes)})
+        const imgRes = await uploadImgs()
+        const size = {size: sizeRes.size, quantity: sizeRes.quantity}
+        const img_urls = imgRes.map(img =>{return {img_url: img.img_url}})
+        console.log(size)
+        console.log(img_urls)
         (res.status(201).json({
+          product_id: product.id,
           name: product.name,
           item_type: product.item_type,
           description: product.description,
@@ -121,6 +128,7 @@ router.post("/products", upload.array("file"), isLoggedIn, (req, res) => {
         const sizes = sizeRes.map(size => {return {size: size.size, quantity: size.quantity}})
         const img_urls = imgRes.map(img =>{return {img_url: img.img_url}})
         res.status(201).json({
+          product_id: product.id,
           name: product.name,
           item_type: product.item_type,
           description: product.description,

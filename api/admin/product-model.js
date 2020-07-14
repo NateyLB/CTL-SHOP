@@ -1,10 +1,10 @@
 const db = require("../../data/dbConfig.js");
 
 module.exports={
-    findProduct,
-    findProductBy,
-    findProductById,
-    addProduct,
+    findProductHeader,
+    findProductHeaderBy,
+    findProductHeaderById,
+    addProductHeader,
     addSize,
     findSizesByProductId,
     findImageById,
@@ -47,36 +47,30 @@ async function addImage(image){
     throw error
   }
 }
-function findProduct(){
+function findProductHeader(){
     return db("products")
         .orderBy('products.id')
 } 
 
-function findProductBy(filter) {
+function findProductHeaderBy(filter) {
     return db("products")
        .where(filter)
        .orderBy("products.id");
   }
   
-function findProductById(id) {
+function findProductHeaderById(id) {
     return db("products").where({ id }).first();
 }
 
-async function addProduct(product) {
+async function addProductHeader(product) {
     try {
       const [id] = await db("products").insert(product , "id");
       
-      return findProductById(id);
+      return findProductHeaderById(id);
     } catch (error) {
       throw error;
     }
   }
 
-// async function addProduct(product) {
-//   return new Promise((resolve, reject) =>{
-//     const [id] = await db("products").insert(product , "id");
-    
-//   })
-// }
 
 
