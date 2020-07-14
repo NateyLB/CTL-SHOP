@@ -12,30 +12,6 @@ module.exports={
     addImage
 }
 
-function findProduct(){
-    return db("products")
-        .orderBy('products.id')
-} 
-
-function findProductBy(filter) {
-    return db("products")
-       .where(filter)
-       .orderBy("products.id");
-  }
-  
-function findProductById(id) {
-    return db("products").where({ id }).first();
-}
-
-async function addProduct(product) {
-    try {
-      const [id] = await db("products").insert(product , "id");
-      
-      return findProductById(id);
-    } catch (error) {
-      throw error;
-    }
-  }
 
 function findSizeById(id){
   return db("product_sizes").where({ id }).first();
@@ -71,3 +47,36 @@ async function addImage(image){
     throw error
   }
 }
+function findProduct(){
+    return db("products")
+        .orderBy('products.id')
+} 
+
+function findProductBy(filter) {
+    return db("products")
+       .where(filter)
+       .orderBy("products.id");
+  }
+  
+function findProductById(id) {
+    return db("products").where({ id }).first();
+}
+
+async function addProduct(product) {
+    try {
+      const [id] = await db("products").insert(product , "id");
+      
+      return findProductById(id);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+// async function addProduct(product) {
+//   return new Promise((resolve, reject) =>{
+//     const [id] = await db("products").insert(product , "id");
+    
+//   })
+// }
+
+

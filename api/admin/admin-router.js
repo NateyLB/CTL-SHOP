@@ -4,12 +4,13 @@ const router = require("express").Router();
 const AWS = require('aws-sdk');
 const { v4: uuidv4 } = require('uuid');
 var multer = require('multer');
-require('dotenv').config({ path: require('find-config')('.env') });
+
 
 
 const Admin = require("./admin-model.js");
 const Product = require("./product-model.js");
 const { isValid, isLoggedIn } = require("./admin-service.js");
+
 
 
 function createToken(admin) {
@@ -78,45 +79,79 @@ router.post("/products", upload.array("file"), isLoggedIn, (req, res) => {
     quantity: req.body.quantity,
   })
     .then(async product => {
-      await Promise.all([
-        req.body.sizes.map(size => Product.addSize({ product_id: product.id, ...JSON.parse(size) })),
-        req.files.map(file => {
-          var uploadParams = { Bucket: process.env.AWS_BUCKET_NAME, Key: uuidv4() + '-' + file.originalname, Body: file.buffer, ContentEncoding: 'base64', ContentType: file.mimetype, ACL: 'public-read' };
-          s3.upload(uploadParams, async function (err, data) {
+      const uploadImg = async (file) =>{
+        const uploadParams = { Bucket: process.env.AWS_BUCKET_NAME, Key: uuidv4() + '-' + file.originalname, Body: file.buffer, ContentEncoding: 'base64', ContentType: file.mimetype, ACL: 'public-read' };
+        return new Promise(async (resolve, reject)=>{
+          await s3.upload(uploadParams, async function (err, data) {
             if (err) {
               console.log("Error", err);
-            } if (data) {
+              reject(err)
+            } else {
               console.log("Upload Success", data.Location);
-              return Product.addImage({ product_id: product.id, img_url: data.Location })
+              resolve(await Product.addImage({ product_id: product.id, img_url: data.Location }))
             }
           });
         })
-      ])
-        .then(async values => {
-          console.log(values, "INSERT SIZE AND URL")
-          await Promise.all([
-            Product.findSizesByProductId(product.id),
-            Product.findImagesByProductId(product.id)
-          ])
-            .then(values => {
-              console.log(values)
-              res.status(201).json({
-                name: product.name,
-                item_type: product.item_type,
-                description: product.description,
-                color: product.color,
-                price: product.price,
-                quantity: product.quantity,
-                sizes: values[0],
-                img_urls: values[1]
-              })
-            })
+      }
+      const uploadImgs = async () =>{
+        const imgPromises = req.files.map(file=>uploadImg(file))
+        return await Promise.all(imgPromises)
+        
+      }
+      // const img_urls = await uploadImgs()
+      // console.log(img_urls)
+      if (typeof req.body.sizes ==  'string') {
+        // const sizeRes = await Product.addSize({product_id: product.id, ...JSON.parse(req.body.sizes)})
+        // const imgRes = await uploadImgs()
+        // const size = {size: sizeRes.size, quantity: sizeRes.quantity}
+        // const img_urls = await imgRes.map(img =>{return {img_url: img.img_url}})
+        // console.log(size)
+        // console.log(img_urls, "URLS")
+        const responses = await Promise.all([Product.addSize({product_id: product.id, ...JSON.parse(req.body.sizes)}),uploadImgs()])
+        const size = {size: responses[0].size, quantity: responses[0].quantity}
+        const img_urls = responses[1].map(img =>{return {img_url: img.img_url}})
+        // console.log(responses)
+        console.log(size)
+        console.log(img_urls)
+        (res.status(201).json({
+          name: product.name,
+          item_type: product.item_type,
+          description: product.description,
+          color: product.color,
+          price: product.price,
+          quantity: product.quantity,
+          sizes: size,
+          img_urls: img_urls
+        }))
+        // res.status(201)({api: "OK"})
+        
+      }
+      else{
+        const sizePromises = req.body.sizes.map(size => Product.addSize({ product_id: product.id, ...JSON.parse(size) }))
+        const sizeRes = await Promise.all(sizePromises)  
+        const imgRes = await uploadImgs()   
+        const sizes = sizeRes.map(size => {return {size: size.size, quantity: size.quantity}})
+        const img_urls = imgRes.map(img =>{return {img_url: img.img_url}})
+        console.log(sizes)
+        console.log(img_urls)
+        res.status(201).json({
+          name: product.name,
+          item_type: product.item_type,
+          description: product.description,
+          color: product.color,
+          price: product.price,
+          quantity: product.quantity,
+          sizes: sizes,
+          img_urls: img_urls
         })
+      }
+
     })
     .catch(err => {
       res.status(500).json({ message: err.message });
     })
 })
+
 
 
 
