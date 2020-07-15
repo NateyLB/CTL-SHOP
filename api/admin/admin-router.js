@@ -8,7 +8,7 @@ var multer = require('multer');
 
 
 const Admin = require("./admin-model.js");
-const Product = require("./product-model.js");
+const Product = require("../products/product-model.js");
 const { isValid, isLoggedIn } = require("./admin-service.js");
 
 
@@ -79,7 +79,7 @@ router.post("/products", upload.array("file"), isLoggedIn, (req, res) => {
     quantity: req.body.quantity,
   })
     .then(async product => {
-      const uploadImg = async (file) =>{
+      const uploadImg = (file) =>{
         const uploadParams = { Bucket: process.env.AWS_BUCKET_NAME, Key: uuidv4() + '-' + file.originalname, Body: file.buffer, ContentEncoding: 'base64', ContentType: file.mimetype, ACL: 'public-read' };
         return new Promise(async (resolve, reject)=>{
           await s3.upload(uploadParams, async function (err, data) {
@@ -99,15 +99,8 @@ router.post("/products", upload.array("file"), isLoggedIn, (req, res) => {
         
       }
       if (typeof req.body.sizes ==  'string') {
-        // const responses = await Promise.all([Product.addSize({product_id: product.id, ...JSON.parse(req.body.sizes)}),uploadImgs()])
-        // const size = {size: responses[0].size, quantity: responses[0].quantity}
-        // const img_urls = responses[1].map(img =>{return {img_url: img.img_url}})
-        const sizeRes = await Product.addSize({product_id: product.id, ...JSON.parse(req.body.sizes)})
-        const imgRes = await uploadImgs()
-        const size = {size: sizeRes.size, quantity: sizeRes.quantity}
-        const img_urls = imgRes.map(img =>{return {img_url: img.img_url}})
-        console.log(size)
-        console.log(img_urls)
+        const size = await Product.addSize({product_id: product.id, ...JSON.parse(req.body.sizes)})
+        const img_urls = await uploadImgs()
         (res.status(201).json({
           product_id: product.id,
           name: product.name,
@@ -123,10 +116,8 @@ router.post("/products", upload.array("file"), isLoggedIn, (req, res) => {
       }
       else{
         const sizePromises = req.body.sizes.map(size => Product.addSize({ product_id: product.id, ...JSON.parse(size) }))
-        const sizeRes = await Promise.all(sizePromises)  
-        const imgRes = await uploadImgs()   
-        const sizes = sizeRes.map(size => {return {size: size.size, quantity: size.quantity}})
-        const img_urls = imgRes.map(img =>{return {img_url: img.img_url}})
+        const sizes = await Promise.all(sizePromises)  
+        const img_urls = await uploadImgs()   
         res.status(201).json({
           product_id: product.id,
           name: product.name,
@@ -144,6 +135,17 @@ router.post("/products", upload.array("file"), isLoggedIn, (req, res) => {
     .catch(err => {
       res.status(500).json({ message: err.message });
     })
+})
+
+router.get("/products", (req, res) => {
+  // .GET /api/admin/products
+  Product.findProducts()
+  .then(products => {
+    res.status(200).json(products)
+  })
+  .catch( err =>{
+    res.status(500).json({ message: err.message });
+  })
 })
 
 

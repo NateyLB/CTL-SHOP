@@ -9,7 +9,8 @@ module.exports={
     findSizesByProductId,
     findImageById,
     findImagesByProductId,
-    addImage
+    addImage,
+    findProducts
 }
 
 
@@ -70,6 +71,34 @@ async function addProductHeader(product) {
     } catch (error) {
       throw error;
     }
+  }
+
+  function findProducts(){
+    return new Promise(async (resolve, reject) => {
+      const productHeader = await db("products")
+      const productPromises = productHeader.map( async product =>{
+        const sizes = await findSizesByProductId(product.id)
+        const img_urls = await findImagesByProductId(product.id)
+        return {
+          product_id: product.id,
+          name: product.name,
+          item_type: product.item_type,
+          description: product.description,
+          color: product.color,
+          price: product.price,
+          quantity: product.quantity,
+          sizes: sizes,
+          img_urls: img_urls
+        }
+      })
+      const products = await Promise.all(productPromises)
+      if (products){
+        resolve(products)
+      } else{
+        const errorObject = {message: "Could not get products"}
+        reject(errorObject)
+      }
+    })
   }
 
 
