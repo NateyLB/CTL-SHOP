@@ -71,8 +71,8 @@ exports.down = function(knex) {
   .dropTableIfExists('orders')
   .dropTableIfExists('users')
   .dropTableIfExists('admin')
-  .dropTableIfExists('item_type')
   .dropTableIfExists('product_sizes')
   .dropTableIfExists('product_images')
   .dropTableIfExists('products')
+  .dropTableIfExists('item_type')
 };
