@@ -74,7 +74,6 @@ router.post("/products", upload.array("file"), isLoggedIn, (req, res) => {
     name: req.body.name,
     item_type: req.body.type,
     description: req.body.description,
-    color: req.body.color,
     price: req.body.price,
     quantity: req.body.quantity,
   })
@@ -106,7 +105,6 @@ router.post("/products", upload.array("file"), isLoggedIn, (req, res) => {
           name: product.name,
           item_type: product.item_type,
           description: product.description,
-          color: product.color,
           price: product.price,
           quantity: product.quantity,
           sizes: [size],
@@ -123,7 +121,6 @@ router.post("/products", upload.array("file"), isLoggedIn, (req, res) => {
           name: product.name,
           item_type: product.item_type,
           description: product.description,
-          color: product.color,
           price: product.price,
           quantity: product.quantity,
           sizes: sizes,
@@ -137,15 +134,15 @@ router.post("/products", upload.array("file"), isLoggedIn, (req, res) => {
     })
 })
 
-router.get("/products", (req, res) => {
-  // .GET /api/admin/products
-  Product.findProducts()
-  .then(products => {
-    res.status(200).json(products)
-  })
-  .catch( err =>{
-    res.status(500).json({ message: err.message });
-  })
+router.post("/products/:id", isLoggedIn,  (req,res) => {
+  console.log(req.body)
+Product.updateProductById(req.params.id, req.body)
+.then(product => {
+  res.status(200).json(product)
+})
+.catch( err =>{
+  res.status(500).json({ message: err.message });
+})
 })
 
 

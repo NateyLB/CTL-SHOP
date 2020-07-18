@@ -10,7 +10,6 @@ exports.up = function(knex) {
         product.integer('item_type').unsigned().references('item_type.id')
         .notNullable().onUpdate('CASCADE').onDelete('CASCADE');
         product.string('description').notNullable();
-        product.string('color').notNullable();
         product.decimal('price').notNullable();
         product.integer('quantity').notNullable();
     })
@@ -24,7 +23,8 @@ exports.up = function(knex) {
         productSize.increments();
         productSize.integer('product_id').unsigned().references('products.id')
         .notNullable().onUpdate('CASCADE').onDelete('CASCADE');
-        productSize.string('size');
+        productSize.string('size').notNullable()
+        productSize.string('color').notNullable()
         productSize.integer('quantity').notNullable();
     })
     .createTable('admin', admin=>{
