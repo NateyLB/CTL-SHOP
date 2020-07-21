@@ -78,9 +78,9 @@ router.post("/products", upload.array("file"), isLoggedIn, (req, res) => {
     quantity: req.body.quantity,
   })
     .then(async product => {
-      const uploadImg = (file) =>{
+      const uploadImg = (file) => {
         const uploadParams = { Bucket: process.env.AWS_BUCKET_NAME, Key: uuidv4() + '-' + file.originalname, Body: file.buffer, ContentEncoding: 'base64', ContentType: file.mimetype, ACL: 'public-read' };
-        return new Promise(async (resolve, reject)=>{
+        return new Promise(async (resolve, reject) => {
           await s3.upload(uploadParams, async function (err, data) {
             if (err) {
               console.log("Error", err);
@@ -92,30 +92,17 @@ router.post("/products", upload.array("file"), isLoggedIn, (req, res) => {
           });
         })
       }
-      const uploadImgs = async () =>{
-        const imgPromises = req.files.map(file=>uploadImg(file))
+      const uploadImgs = async () => {
+        const imgPromises = req.files.map(file => uploadImg(file))
         return await Promise.all(imgPromises)
-        
+
       }
-      if (typeof req.body.sizes ==  'string') {
-        const size = await Product.addSize({product_id: product.id, ...JSON.parse(req.body.sizes)})
-        const img_urls = await uploadImgs()
-        (res.status(201).json({
-          product_id: product.id,
-          name: product.name,
-          item_type: product.item_type,
-          description: product.description,
-          price: product.price,
-          quantity: product.quantity,
-          sizes: [size],
-          img_urls: img_urls
-        }))
-        
+      if (typeof req.body.sizes == 'string') {
+        req.body.sizes = [req.body.sizes]
       }
-      else{
         const sizePromises = req.body.sizes.map(size => Product.addSize({ product_id: product.id, ...JSON.parse(size) }))
-        const sizes = await Promise.all(sizePromises)  
-        const img_urls = await uploadImgs()   
+        const sizes = await Promise.all(sizePromises)
+        const img_urls = await uploadImgs()
         res.status(201).json({
           product_id: product.id,
           name: product.name,
@@ -126,7 +113,6 @@ router.post("/products", upload.array("file"), isLoggedIn, (req, res) => {
           sizes: sizes,
           img_urls: img_urls
         })
-      }
 
     })
     .catch(err => {
@@ -134,16 +120,26 @@ router.post("/products", upload.array("file"), isLoggedIn, (req, res) => {
     })
 })
 
-router.post("/products/:id", isLoggedIn,  (req,res) => {
-  console.log(req.body)
-Product.updateProductById(req.params.id, req.body)
-.then(product => {
-  res.status(200).json(product)
+router.post("/products/:id", isLoggedIn, (req, res) => {
+  Product.updateProductById(req.params.id, req.body)
+    .then(product => {
+      res.status(200).json(product)
+    })
+    .catch(err => {
+      res.status(500).json({ message: err.message });
+    })
 })
-.catch( err =>{
-  res.status(500).json({ message: err.message });
+//delete image by image id, needs product id to return list of updated images
+router.post('/products/:product_id/images', isLoggedIn, async (req, res) => {
+  Product.deleteImageById(req.params.product_id, req.body.img_url)
+  .then(images => {
+    res.status(200).json(images)
+  })
+  .catch(err => {
+    res.status(500).json({ message: err.message });
+  })
 })
-})
+
 
 
 
