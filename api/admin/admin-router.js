@@ -120,7 +120,7 @@ router.post("/products", upload.array("file"), isLoggedIn, (req, res) => {
     })
 })
 
-router.post("/products/:id", isLoggedIn, (req, res) => {
+router.put("/products/:id", isLoggedIn, (req, res) => {
   Product.updateProductById(req.params.id, req.body)
     .then(product => {
       res.status(200).json(product)
