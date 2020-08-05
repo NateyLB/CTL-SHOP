@@ -45,7 +45,7 @@ exports.up = function(knex) {
     .createTable('orders', order =>{
         order.increments();
         order.integer('user_id').unsigned().references('users.id')
-        .notNullable().onUpdate('CASCADE').onDelete('CASCADE');
+        .onUpdate('CASCADE').onDelete('CASCADE');
         order.string('email');
         order.string('name');
         order.string('street_address');
